@@ -19,9 +19,8 @@ class MainActivity : AppCompatActivity() {
 
         val tv = findViewById<TextView>(R.id.textView)
         val btn = findViewById<Button>(R.id.button)
-        val et = findViewById<EditText>(R.id.etID)
-
-        val idFromEt = et.text.toString().toInt()
+        val et = findViewById<EditText>(R.id.editTextNumber)
+        et.setText("1")
 
         val retrofit = Retrofit.Builder()
             .baseUrl("https://dummyjson.com")
@@ -30,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 
         btn.setOnClickListener{
             CoroutineScope(Dispatchers.IO).launch {
+                val idFromEt = et.text.toString().toInt()
                 val product = productAPI.getProductByID(idFromEt)
                 runOnUiThread{
                     tv.text = product.title
