@@ -2,28 +2,25 @@ package com.example.retrofittest
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import com.example.retrofittest.retrofit.ProductAPI
+import com.example.retrofittest.databinding.ActivityMainBinding
+import com.example.retrofittest.retrofit.AuthRequest
+import com.example.retrofittest.retrofit.MainAPI
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.OkHttp
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
+    lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        val tv = findViewById<TextView>(R.id.textView)
-        val btn = findViewById<Button>(R.id.button)
-        val et = findViewById<EditText>(R.id.editTextNumber)
-        et.setText("1")
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -35,14 +32,23 @@ class MainActivity : AppCompatActivity() {
         val retrofit = Retrofit.Builder()
             .baseUrl("https://dummyjson.com").client(client)
             .addConverterFactory(GsonConverterFactory.create()).build()
-        val productAPI = retrofit.create(ProductAPI::class.java)
+        val mainAPI = retrofit.create(MainAPI::class.java)
 
-        btn.setOnClickListener{
+        binding.buttonSignIn.setOnClickListener{
             CoroutineScope(Dispatchers.IO).launch {
-                val idFromEt = et.text.toString().toInt()
-                val product = productAPI.getProductByID(idFromEt)
+                val user = mainAPI.Auth(
+                    AuthRequest(
+                        binding.editTextUsername.text.toString(),
+                        binding.editTextPassword.text.toString()
+                    )
+                )
                 runOnUiThread{
-                    tv.text = product.title
+                    binding.apply {
+                        Picasso.get().load(user.image).into(imageView)
+                        firstName.text = user.firstName
+                        secondName.text = user.lastName
+                    }
+
                 }
             }
         }
