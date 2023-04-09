@@ -2,6 +2,8 @@ package com.example.retrofittest
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.retrofittest.adapter.ProductAdapter
 import com.example.retrofittest.databinding.ActivityMainBinding
 import com.example.retrofittest.retrofit.AuthRequest
 import com.example.retrofittest.retrofit.MainAPI
@@ -15,12 +17,18 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var adapter: ProductAdapter
     lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        adapter = ProductAdapter()
+        binding.recycler.layoutManager = LinearLayoutManager(this)
+        binding.recycler.adapter = adapter
+
 
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -34,23 +42,16 @@ class MainActivity : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create()).build()
         val mainAPI = retrofit.create(MainAPI::class.java)
 
-        binding.buttonSignIn.setOnClickListener{
+
             CoroutineScope(Dispatchers.IO).launch {
-                val user = mainAPI.Auth(
-                    AuthRequest(
-                        binding.editTextUsername.text.toString(),
-                        binding.editTextPassword.text.toString()
-                    )
-                )
+                val obj = mainAPI.getAllProds()
                 runOnUiThread{
                     binding.apply {
-                        Picasso.get().load(user.image).into(imageView)
-                        firstName.text = user.firstName
-                        secondName.text = user.lastName
+                        adapter.submitList(obj.products)
                     }
 
                 }
             }
-        }
+
     }
 }

@@ -10,6 +10,9 @@ interface MainAPI {
     suspend fun getProductByID(@Path("id") id: Int): Product
 
     @POST("auth/login")
-    suspend fun Auth(@Body authRequest: AuthRequest): User
+    suspend fun auth(@Body authRequest: AuthRequest): User
+
+    @GET("products")
+    suspend fun getAllProds(): Products
 
 }
